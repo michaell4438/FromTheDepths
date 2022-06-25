@@ -2,7 +2,7 @@ activeMainframe = 0; -- set the mainframe that this guidance system should slave
                      -- 0 is the first mainframe, 1 the second, 2 the next, etc..
                      -- May cause errors if an invalid mainframe was given
 
-ascentTime = 3;      -- The time (in seconds) the missile will spend ascending to above the target.
+ascentTime = 4;      -- The time (in seconds) the missile will spend ascending to above the target.
                      -- A longer ascent time will make the missile be higher above the target
                      -- However, shorter ascent times will make the missile hit the target quicker
                      -- You should balance this with your missile's flight speed, lifetime, and thrust time
@@ -11,10 +11,12 @@ ascentHeight = 3000; -- The peak height that the missile should aim for during t
                      -- Higher heights will result in the missile have a steeper slope during the ascent
                      -- Lower heights will have a more direct path
 
-directHeight = 50;   -- Will fly in a direct line if the targets height is above this level
+directHeight = 150;   -- Will fly in a direct line if the targets height is above this level
                      -- This is intended to compensate for aircraft, though missiles guided using
                      -- seeking heads will be more effective
 
+criticalTime = 0.3;  -- Will detonate the missile this much time before impact to prevent a miss
+                     -- Lower values recommended, larger values useful for frag warheads
 
 
 -- Note that you CANNOT have two different lua boxes with conflicting scripts for missile guidance
@@ -95,6 +97,9 @@ function GuideMissile(I, transciever, missile, targetIndex)
     end
     if msl.TimeSinceLaunch>ascentTime or pos.y>directHeight then
         I:SetLuaControlledMissileAimPoint(transciever, missile, tgtEstimate.x, tgtEstimate.y, tgtEstimate.z);
+        if timeOnTarget<criticalTime and msl.TimeSinceLaunch>ascentTime then
+            I:DetonateLuaControlledMissile(transciever, missile);
+        end
     end
 end
 
